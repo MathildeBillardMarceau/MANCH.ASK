@@ -1,7 +1,18 @@
 <script>
 </script>
 
-<p>Bienvenue en saison A07 ! (Enlève ce paragraphe pour écrire ton code HTML à la place 😉)</p>
+<div class="Homepage">
+    <section class="header">
+        <img src="" alt="" class="logo">
+    </section> 
+    <section class="historique">
+
+    </section>
+    <section class="zonedesaisie">
+
+    </section>
+</div>
+
 
 <style>
 </style>
