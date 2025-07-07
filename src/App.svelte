@@ -25,7 +25,7 @@
         </main>
         
         <section class="historique">
-            
+            <img src="/elements/historique.png" alt="" class="homepage__container__footer">
         </section>
     </div>
     
