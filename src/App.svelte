@@ -50,31 +50,28 @@
     width: 90%;
     height: 55vh;
     background-color: whitesmoke;
+    position: relative; 
 
 }
 
 .homepage__container__zonedesaisie__inputcontainer--input {
     height: 2.5rem;
-    display: flex;
-    flex-direction: row;
-    flex-wrap: nowrap;
     border: 1px solid black;
     border-radius: 35px;
     width: 90%;
-    align-items: center;
-    box-shadow: 4px 5px rgba(0, 0, 0, 0.35);
-    margin-bottom: 5px;
-    position: relative; 
+    display: grid;
+    box-shadow: 4px 5px rgba(0, 0, 0, 0.25);
+    margin-bottom: 10px;
+
 }
 
 .homepage__container__zonedesaisie__inputcontainer__icone--button {
+    position:sticky;
+    right: 10px;
+    align-items: end;
     border: none;
-    top: 79.5%;
-    height: fit-content;
-    border-radius: 50px;
-    position: absolute;
-    right: 40px;
-    transform: translateY(+90%);
+    background: none;
+    cursor: pointer;
     
 }
 
