@@ -15,6 +15,9 @@
         <main class="zonedesaisie">
             <div class="homepage__container__zonedesaisie__inputcontainer">
                 <input type="text" class="homepage__container__zonedesaisie__inputcontainer--input">
+                <button type="submit" aria-labelledby="send" class="homepage__container__zonedesaisie__inputcontainer__icone--button"> 
+                    <img src="/elements/icons8-search-50.png" alt="icone recherche"  class="homepage__container__zonedesaisie__inputcontainer__icone">
+                </button>
             </div>
         </main>
         
@@ -35,7 +38,7 @@
 
 .homepage__container__zonedesaisie__inputcontainer {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     margin: auto;
     border: 1px solid grey;
     border-radius: 25px;
@@ -60,8 +63,18 @@
     box-shadow: 4px 5px rgba(0, 0, 0, 0.35);
 }
 
+.homepage__container__zonedesaisie__inputcontainer__icone--button {
+    width: 1rem; 
+    height: 1rem;
+    margin-left: 10px;
+    size: 1rem;
+    background-color: #ffcccc; 
+
+}
+
 .homepage__container__header--questions {
     text-align: end;
     margin: 20px 10px;
 }
+
 </style>
