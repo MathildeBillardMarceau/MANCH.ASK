@@ -11,39 +11,41 @@
             <div class="homepage__container_header--logo">
                 <img src="/elements/logo.png" alt="inscription MANCHASK suivi du chat Manchas" class="logo">
             </div>
-            <p class="homepage__container__header--questions">Tu te pose des questions ? <br> Manchas te réponds.</p>
+            <p class="homepage__container__header--questions">Tu te poses des questions ? <br> Manchas te réponds.</p>
         </header> 
         
         <main class="zonedesaisie">
+
             <div class="homepage__container__zonedesaisie__inputcontainer" >
-                <input type="text" class="homepage__container__zonedesaisie__inputcontainer--input" placeholder=" Pose ta question à Manchas...">
-                <button type="submit" aria-label="Envoyer" class="homepage__container__zonedesaisie__inputcontainer__icone--button">  
-                    <img src="/elements/icons8-search-50.png" alt="Envoyer" style="width: 32px; height: 32px;">
-                </button>
+                <!-- <div class="onlyContainer"> -->
+
+                    <input type="text" class="homepage__container__zonedesaisie__inputcontainer--input" placeholder=" Pose ta question à Manchas...">
+                    <button type="submit" aria-label="Envoyer" class="homepage__container__zonedesaisie__inputcontainer__icone--button">  
+                        <img src="/elements/icons8-search-50.png" alt="Envoyer" style="width: 42px; height: 42px;">
+                    </button>
+
+                <!-- </div> -->
             </div>
         
         </main>
         
-        <section class="historique">
+        <footer class="historique">
             <img src="/elements/historique.png" alt="" class="homepage__container__footer">
-        </section>
+        </footer>
     </div>
     
 </body>
 
 <style>
 
-.homepage__container {
-    display: flex;
-    flex-direction: column;
-
-}
+/* .onlyContainer {
+    display:inline;
+} */
 
 .homepage__container__zonedesaisie__inputcontainer {
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
-    align-items: center;
     margin: auto;
     border: 1px solid grey;
     border-radius: 25px;
@@ -58,26 +60,26 @@
     height: 2.5rem;
     border: 1px solid black;
     border-radius: 35px;
-    width: 90%;
-    display: grid;
+    width:initial;
+    /* display: grid; */
     box-shadow: 4px 5px rgba(0, 0, 0, 0.25);
-    margin-bottom: 10px;
-
+    margin: 15px;
+    /* position: absolute; */
 }
 
 .homepage__container__zonedesaisie__inputcontainer__icone--button {
-    position:sticky;
-    right: 10px;
-    align-items: end;
+    /* position:sticky; */
     border: none;
     background: none;
     cursor: pointer;
-    
+    position: absolute;
+    right: 5%;
+    bottom: 3%;
 }
 
 .homepage__container__header--questions {
     text-align: end;
-    margin: 20px 10px;
+    margin: 3% 5%;
 }
 
 </style>
