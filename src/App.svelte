@@ -2,13 +2,19 @@
 </script>
 
 <div class="Homepage">
-    <section class="header">
-        <img src="/var/www/html/s07/SA07-projet-ochat-MathildeBillardMarceau/public/ icone&logos/logo.png" alt="" class="logo">
-    </section> 
-    <section class="historique">
 
-    </section>
+    <header class="header">
+        <div class="logo">
+            <img src="/elements/logo.png" alt="inscription MANCHASK suivi du chat Manchas" class="logo">
+        </div>
+        <p class="questions">Tu te pose des questions ? Manchas te réponds.</p>
+    </header> 
+
     <section class="zonedesaisie">
+        
+    </section>
+
+    <section class="historique">
 
     </section>
 </div>
