@@ -29,8 +29,9 @@ async function handleSubmit (event) {
 chatServers = await response.json();
 console.log(chatServers);
 chat = chatServers.choices[0].message.content;
-console.log(chat);
-document.querySelector('.messages').textContent = chat;
+console.log(currentChats, chat);
+document.querySelector('.messagesUser').textContent = currentChats;
+document.querySelector('.messagesIa').textContent = chat;
 }
 
 
@@ -50,9 +51,8 @@ document.querySelector('.messages').textContent = chat;
     <main class="zonedesaisie">
         
         <div class="homepage__container__zonedesaisie__inputcontainer" >
-            <div class="messages">
-
-        </div>
+            <div class="messagesUser"> </div>
+            <div class="messagesIa"></div>
             <form onsubmit={handleSubmit} class="homepage__container__zonedesaisie__inputcontainer__form"> 
                 
                 <input bind:value={currentChats} type="text" class="homepage__container__zonedesaisie__inputcontainer__form--input" placeholder=" Pose ta question à Manchas...">
@@ -172,4 +172,21 @@ document.querySelector('.messages').textContent = chat;
     display: block;
 }
 
+.messagesUser {
+    border: 1px solid #E3E0DE;
+    border-radius: 20px;
+    margin: 5px 10px;
+    padding: 5px 10px;
+    background-color: #CEC2B2;
+    text-align: end;
+}
+
+.messagesIa {
+    border: 1px solid #CEC2B2;
+    border-radius: 20px;
+    margin: 5px 10px;
+    padding: 5px 10px;
+    background-color: #E3E0DE;
+    text-align: start;
+}
 </style>
