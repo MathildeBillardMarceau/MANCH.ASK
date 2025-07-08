@@ -1,8 +1,8 @@
 <script>
 // import {onMount} from 'svelte';
-
-let chat = $state ([]);
-let currentChats = $state ("");
+let error = $state(null);
+let chatsUser = $state ([]);
+let chatsIA = $state ("");
 let chatServers = $state ("");
 
 async function handleSubmit (event) {
@@ -19,7 +19,7 @@ async function handleSubmit (event) {
                 messages: [
                     {
                         role: "user",
-                        content: currentChats,
+                        content: chatsUser,
                     }
                 ]
             }
@@ -28,15 +28,14 @@ async function handleSubmit (event) {
     )
 chatServers = await response.json();
 console.log(chatServers);
-chat = chatServers.choices[0].message.content;
-console.log(currentChats, chat);
-document.querySelector('.messagesUser').textContent = currentChats;
-document.querySelector('.messagesIa').textContent = chat;
+chatsIA = chatServers.choices[0].message.content;
+
+document.querySelector('.messagesUser').textContent = chatsUser;
+document.querySelector('.messagesIa').textContent = chatI;
 }
 
-
-
 // onMount(handleSubmit)
+
 </script>
 
 <div class="homepage__container" >
@@ -51,11 +50,15 @@ document.querySelector('.messagesIa').textContent = chat;
     <main class="zonedesaisie">
         
         <div class="homepage__container__zonedesaisie__inputcontainer" >
-            <div class="messagesUser"> </div>
-            <div class="messagesIa"></div>
+            
+            {#if chatsIA && chatsUser !== "" }
+                <p class="messagesUser">{chatsUser}</p>
+                <p class="messagesIa">{chatsIA}</p>
+            {/if}
+            
             <form onsubmit={handleSubmit} class="homepage__container__zonedesaisie__inputcontainer__form"> 
                 
-                <input bind:value={currentChats} type="text" class="homepage__container__zonedesaisie__inputcontainer__form--input" placeholder=" Pose ta question à Manchas...">
+                <input bind:value={chatsUser} type="text" class="homepage__container__zonedesaisie__inputcontainer__form--input" placeholder=" Pose ta question à Manchas...">
                 <button type="submit" aria-label="Envoyer" class="homepage__container__zonedesaisie__inputcontainer__icone--button">  
                     <img src="/elements/icons8-search-50.png" alt="Envoyer" style="width: 42px; height: 42px;">
                 </button>
