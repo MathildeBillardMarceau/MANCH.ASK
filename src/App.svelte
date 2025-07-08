@@ -1,5 +1,10 @@
 <script>
+// @ts-nocheck
+
 // import {onMount} from 'svelte';
+import Markdown from 'svelte-exmarkdown';
+import "./md.css";
+
 let Token = localStorage.getItem("userToken") || prompt("Entrez votre token :");
 
 const VALID_TOKEN = "BraU6oMJjYOwhzFPu6elA0YdC1qQ78Z8";
@@ -21,7 +26,7 @@ async function handleSubmit (event) {
     const response = await fetch ("https://api.mistral.ai/v1/chat/completions",  {
         method: "POST",
         headers: {
-        // "Authorization": "Bearer BraU6oMJjYOwhzFPu6elA0YdC1qQ78Z8",
+        "Authorization": "Bearer BraU6oMJjYOwhzFPu6elA0YdC1qQ78Z8",
         "content-type" : "application/json"
                 },
         body: JSON.stringify(
@@ -42,7 +47,7 @@ console.log(chatServers);
 chatsIA = chatServers.choices[0].message.content;
 
 document.querySelector('.messagesUser').textContent = chatsUser;
-document.querySelector('.messagesIa').textContent = chatI;
+document.querySelector('.messagesIa').textContent = chatsIA;
 }
 
 // onMount(handleSubmit)
@@ -64,7 +69,7 @@ document.querySelector('.messagesIa').textContent = chatI;
             
             {#if chatsIA && chatsUser !== "" }
                 <p class="messagesUser">{chatsUser}</p>
-                <p class="messagesIa">{chatsIA}</p>
+                <p class="messagesIa"><Markdown md={chatsIA}/></p>
             {/if}
             
             <form onsubmit={handleSubmit} class="homepage__container__zonedesaisie__inputcontainer__form"> 
