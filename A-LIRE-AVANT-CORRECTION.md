@@ -48,11 +48,11 @@
     mais si ça avait duré plus longtemps j'aurai surement changé l'emplacement du bouton sur ma maquette.
 
     Néanmoins, ça m'a permis de tester plein de choses !
-
+    
 - Ce que tu referais différemment:
     ```
     J'essaierai d'être plus attentive aux consignes.
-
+    
 - Les prochaines étapes si tu avais eu plus de temps:
 
     ```
