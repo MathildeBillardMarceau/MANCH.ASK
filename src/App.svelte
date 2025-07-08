@@ -1,16 +1,27 @@
 <script>
 // import {onMount} from 'svelte';
+let Token = localStorage.getItem("userToken") || prompt("Entrez votre token :");
+
+const VALID_TOKEN = "BraU6oMJjYOwhzFPu6elA0YdC1qQ78Z8";
+
+	if (Token !== VALID_TOKEN) {
+		alert("Token invalide !"); localStorage.removeItem("userToken"); document.body.innerHTML = "";
+	} else {
+		localStorage.setItem("userToken", Token);
+	}
+
+
 let error = $state(null);
-let chatsUser = $state ([]);
+let chatsUser = $state ("");
 let chatsIA = $state ("");
-let chatServers = $state ("");
+let chatServers = $state ([]);
 
 async function handleSubmit (event) {
     event.preventDefault();
     const response = await fetch ("https://api.mistral.ai/v1/chat/completions",  {
         method: "POST",
         headers: {
-        "Authorization": "Bearer BraU6oMJjYOwhzFPu6elA0YdC1qQ78Z8",
+        // "Authorization": "Bearer BraU6oMJjYOwhzFPu6elA0YdC1qQ78Z8",
         "content-type" : "application/json"
                 },
         body: JSON.stringify(
@@ -97,7 +108,7 @@ document.querySelector('.messagesIa').textContent = chatI;
     height: 55vh;
     background-color: whitesmoke;
     position: relative; 
-
+    overflow-y: scroll;
 }
 
 .homepage__container__zonedesaisie__inputcontainer__form {
@@ -113,7 +124,6 @@ document.querySelector('.messagesIa').textContent = chatI;
 
 .homepage__container__zonedesaisie__inputcontainer__form--input {
     height: 2.3rem;
-    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
     border-radius: 35px;
     border: none;
     justify-content: center;
