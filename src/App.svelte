@@ -3,18 +3,24 @@
 
 // import {onMount} from 'svelte';
 import Markdown from 'svelte-exmarkdown';
-import "./md.css";
+// import "./md.css";
 
-let Token = localStorage.getItem("userToken") || prompt("Entrez votre token :");
+let token = $state ("");
+let mistralToken = $state(localStorage.getItem("mistraltoken"))
 
-const VALID_TOKEN = "BraU6oMJjYOwhzFPu6elA0YdC1qQ78Z8";
-
-	if (Token !== VALID_TOKEN) {
-		alert("Token invalide !"); localStorage.removeItem("userToken"); document.body.innerHTML = "";
-	} else {
-		localStorage.setItem("userToken", Token);
-	}
-
+function saveToken(event) {
+    event.preventDefault();
+    
+    token = token.trim();
+    
+    if (token) {
+    localStorage.setItem('mistralToken', token);
+    mistralToken = token;
+    } 
+    else {
+      alert('Veuillez entrer une clé Mistral valide.');
+    }
+}
 
 let error = $state(null);
 let chatsUser = $state ("");
@@ -26,8 +32,9 @@ async function handleSubmit (event) {
     const response = await fetch ("https://api.mistral.ai/v1/chat/completions",  {
         method: "POST",
         headers: {
-        "Authorization": "Bearer BraU6oMJjYOwhzFPu6elA0YdC1qQ78Z8",
-        "content-type" : "application/json"
+            "content-type" : "application/json",
+            Accept : "appliction/json",
+            Authorization: `Bearer ${mistralToken}`,
                 },
         body: JSON.stringify(
             {
@@ -55,6 +62,14 @@ document.querySelector('.messagesIa').textContent = chatsIA;
 </script>
 
 <div class="homepage__container" >
+
+    {#if !mistralToken}
+    <form class="form__token" onsubmit={saveToken}>
+      <input class="form__token--input" type="text" name="token" placeholder="  Entrez votre clé Mistral" bind:value={token} />
+      <button class="form__token--button" type="submit">Enregistrer</button>
+    </form>
+
+    {:else}
     
     <header class="homepage__container__header">
         <div class="homepage__container_header--logo">
@@ -95,12 +110,23 @@ document.querySelector('.messagesIa').textContent = chatsIA;
                 </div>
             </div>
         </footer>
-    </div>
-    
-
+        {/if}
+</div>
 
 <style>
+.form__token {
+    display: flex;
+    justify-content: center;
+    height: 5rem;
+    margin: 45%;
+    width: 25rem;
+}
 
+.form__token--button, .form__token--input{
+    border: none;
+    border-radius: 30px;
+    margin: 0 5px;
+}
 
 .homepage__container__zonedesaisie__inputcontainer {
     display: flex;
