@@ -63,21 +63,53 @@
 - Ce que j'ai mis en place techniquement (même si ça n'est “pas fini”):
 
     ```
+    J'ai mis en place un menu déroulant pour accèder à l'historique des conversations.
 
+    Je me suis perdue en voulant le déclancher après un clic dessus. J'ai finalement décidé de faire apparaitre son contenu lorsque l'on le survol (:hover), ça a été plus simple.
+    
 
 - Ce que je voulais faire mais que tu n’as pas réussi à faire:
     ```
-
+    J'ai essayé de retirer mon token u code sans succès.
 
 - Les points bloquants ou les choix que tu as faits:
     ```
-
+    J'ai eu du mal à afficher les messages dans mon interface. Je suis partie dans tous les sens. J'ai fini par demander l'aide de Caroline.
     
 - Ce que tu referais différemment:
     ```
-
+    Je demanderai de l'aide plus tôt?
+    M'éparpillerait moins sur les IA.
     
 - Les prochaines étapes si tu avais eu plus de temps:
 
     ```
+    Trouver une façon correcte d'enlever mon token du code.
 
+
+## Jour 3
+
+- Ce que j'ai mis en place techniquement (même si ça n'est “pas fini”):
+
+    ```
+    Je me suis complétement appuyée sur la correction de la veille pour revoir mon code. j'envoie mon code à chat gpt pour qu'il me donne son avis et m'explique le fonctionnement précis de certaines parties que je maitrise pas encore.
+
+    j'ai découvert "l'outline: none;" que j'ai appliqué sur mon input pour lui enlevé son contour bleu clair.
+
+- Ce que je voulais faire mais que tu n’as pas réussi à faire:
+    ```
+    J'ai voulu poursuivre sur le j04 pour m'avancer mais je dois me reposer.
+
+- Les points bloquants ou les choix que tu as faits:
+    ```
+    J'ai du récupèrer mon ancien code dans github car j'ai rencontré un probleme en essayant de faire un second serveur session pour m'avancer sur le j04.
+    
+- Ce que tu referais différemment:
+    ```
+    Je n'ai encore une fois pas pensé à regarder directement sur le site de pocketbase si il y avait des ressources avant de demander à chat gpt.
+    
+- Les prochaines étapes si tu avais eu plus de temps:
+
+    ```
+    - de chatgpt
+    + de plan de code, pour mieux m'organiser
