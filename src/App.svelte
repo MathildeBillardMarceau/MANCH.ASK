@@ -1,10 +1,11 @@
 <script>
 // @ts-nocheck
 
-// import {onMount} from 'svelte';
+import {onMount} from 'svelte';
 import Markdown from 'svelte-exmarkdown';
+import PocketBase from 'pocketbase';
 // import "./md.css";
-
+const pb = new PocketBase('http://127.0.0.1:8090');
 let token = $state ("");
 let mistralToken = $state(localStorage.getItem("mistraltoken"))
 
@@ -43,12 +44,15 @@ async function handleMessageSubmit (event) {
             };
 
         messages.push(newMessage);
-
+        
+        await pb.collection('messages').create(newMessage);
         messageContent = "";
+
         const formattedMessages = messages.map((msg) => ({
         role: msg.role,
         content: msg.content,
       }));
+
         // const formattedMessages = [];
         //     for (const message of messages) {
         //     formattedMessages.push({
@@ -88,6 +92,7 @@ async function handleMessageSubmit (event) {
         }
         
         messages.push(assistantMessage);
+        await pb.collection('messages').create(assistantMessage);
         console.log("Messages après ajout :", messages);
        
         
@@ -102,7 +107,23 @@ async function handleMessageSubmit (event) {
     }    
 }
 
-// onMount(handleSubmit)
+onMount(async () => {
+  try {
+    const result = await pb.collection('messages').getFullList({
+      sort: 'created', 
+    });
+
+    messages = result.map(record => ({
+      role: record.role,
+      content: record.content,
+      created: new Date(record.created)
+    }));
+
+    console.log('Messages chargés depuis PocketBase :', messages);
+  } catch (err) {
+    console.error('Erreur lors du chargement des messages :', err);
+  }
+});
 
 </script>
 
