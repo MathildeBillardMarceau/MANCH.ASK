@@ -57,3 +57,27 @@
 
     ```
     Avec plus de temps, j'aurai écrit les balises des discussions présente dans l'historique. 
+
+## Jour 2
+
+- Ce que j'ai mis en place techniquement (même si ça n'est “pas fini”):
+
+    ```
+
+
+- Ce que je voulais faire mais que tu n’as pas réussi à faire:
+    ```
+
+
+- Les points bloquants ou les choix que tu as faits:
+    ```
+
+    
+- Ce que tu referais différemment:
+    ```
+
+    
+- Les prochaines étapes si tu avais eu plus de temps:
+
+    ```
+
