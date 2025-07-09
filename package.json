@@ -14,6 +14,7 @@
     "vite": "^6.2.0"
   },
   "dependencies": {
-    "svelte-exmarkdown": "^5.0.1"
+    "svelte-exmarkdown": "^5.0.1",
+    "pocketbase": "^0.x.x"
   }
 }
