@@ -23,38 +23,83 @@ function saveToken(event) {
 }
 
 let error = $state(null);
-let chatsUser = $state ("");
-let chatsIA = $state ("");
-let chatServers = $state ([]);
+let messageContent = $state ("");
 
-async function handleSubmit (event) {
+let messages = $state ([]);
+
+async function handleMessageSubmit (event) {
     event.preventDefault();
-    const response = await fetch ("https://api.mistral.ai/v1/chat/completions",  {
-        method: "POST",
-        headers: {
-            "content-type" : "application/json",
-            Accept : "appliction/json",
-            Authorization: `Bearer ${mistralToken}`,
-                },
-        body: JSON.stringify(
-            {
-                model: "mistral-small-latest",
-                messages: [
-                    {
-                        role: "user",
-                        content: chatsUser,
-                    }
-                ]
-            }
-        )
-        }
-    )
-chatServers = await response.json();
-console.log(chatServers);
-chatsIA = chatServers.choices[0].message.content;
+    console.log(messageContent);
 
-document.querySelector('.messagesUser').textContent = chatsUser;
-document.querySelector('.messagesIa').textContent = chatsIA;
+    messageContent = messageContent.trim();
+
+    if(messageContent) {
+        try {
+            const newMessage = {
+                role: "user",
+                content: messageContent,
+          
+                created: new Date(), 
+            };
+
+        messages.push(newMessage);
+
+        messageContent = "";
+        const formattedMessages = messages.map((msg) => ({
+        role: msg.role,
+        content: msg.content,
+      }));
+        // const formattedMessages = [];
+        //     for (const message of messages) {
+        //     formattedMessages.push({
+        //     role: "assistant",
+        //     content: data.content,
+
+        //     created: new Date(), 
+        //   });
+        // }
+
+        const response = await fetch ("https://api.mistral.ai/v1/chat/completions",  {
+            method: "POST",
+            headers: {
+                "content-type" : "application/json",
+                Accept : "application/json",
+                Authorization: `Bearer ${mistralToken}`,
+                    },
+            body: JSON.stringify(
+                {
+                    model: "mistral-small-latest",
+                    messages: formattedMessages,
+                }
+            ),
+            }
+        );
+
+        const result = await response.json();
+        console.log(result);
+
+        // const data = result.choices[0]
+        // console.log("Premier choix retourné :", data);
+
+        const assistantMessage = {
+        role: "assistant",
+        content: result.choices[0].message.content,
+        created: new Date(),
+        }
+        
+        messages.push(assistantMessage);
+        console.log("Messages après ajout :", messages);
+       
+        
+        } catch (error) {
+            console.error('send message error:', error);
+        }
+    }
+
+
+    else {
+      alert('Veuillez entrer un message valide.');
+    }    
 }
 
 // onMount(handleSubmit)
@@ -82,14 +127,34 @@ document.querySelector('.messagesIa').textContent = chatsIA;
         
         <div class="homepage__container__zonedesaisie__inputcontainer" >
             
-            {#if chatsIA && chatsUser !== "" }
-                <p class="messagesUser">{chatsUser}</p>
-                <p class="messagesIa"><Markdown md={chatsIA}/></p>
-            {/if}
+            <!-- {#if messageContent !== "" }
+                <p class="messagesUser">{messageContent}</p>
+                <p class="messagesIa"><Markdown md={formattedMessages}/></p>
+            {/if} -->
             
-            <form onsubmit={handleSubmit} class="homepage__container__zonedesaisie__inputcontainer__form"> 
+                  <section class="messages">
+        {#each messages as message}
+          <div class={`message message--${message.role}`}>
+            <div class="markdown-body">
+              <Markdown md={message.content} />
+            </div>
+            <!-- 
+              on met en forme l'heure comme l'affichage le prévoir 
+              on récupère la date du message et on la transforme en ne conservant que l'heure au format français (ex : 18:30) 
+            -->
+            <time datetime={message.created}
+              >{new Date(message.created).toLocaleTimeString("fr-FR", {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </time>
+        </div>
+        {/each}
+      </section>
+
+            <form onsubmit={handleMessageSubmit} class="homepage__container__zonedesaisie__inputcontainer__form"> 
                 
-                <input bind:value={chatsUser} type="text" class="homepage__container__zonedesaisie__inputcontainer__form--input" placeholder=" Pose ta question à Manchas...">
+                <input bind:value={messageContent} type="text" class="homepage__container__zonedesaisie__inputcontainer__form--input" placeholder=" Pose ta question à Manchas..." id="submit">
                 <button type="submit" aria-label="Envoyer" class="homepage__container__zonedesaisie__inputcontainer__icone--button">  
                     <img src="/elements/icons8-search-50.png" alt="Envoyer" style="width: 42px; height: 42px;">
                 </button>
@@ -105,8 +170,12 @@ document.querySelector('.messagesIa').textContent = chatsIA;
                     <img src="/elements/historique.png" alt="" class="homepage__container__footer">
                 </button>
                 <div class="homepage__historique__dropdown--child">
-                    <a href="http://localhost:5173/" target="_blank"> Pourquoi le ciel est bleu ?</a>
-                    <a href="http://localhost:5173/" target="_blank"> Combien de croquettes ?</a>
+                    <a href="http://localhost:5173/" target="_blank"> Pourquoi le ciel est bleu ?
+                    <button type="button" class="buttonSup"> X </button>
+                    </a>
+                    <a href="http://localhost:5173/" target="_blank"> Combien de croquettes ?
+                    <button type="button" class="buttonSup"> X </button>
+                    </a>
                 </div>
             </div>
         </footer>
@@ -114,11 +183,12 @@ document.querySelector('.messagesIa').textContent = chatsIA;
 </div>
 
 <style>
+
+
 .form__token {
-    display: flex;
     justify-content: center;
-    height: 5rem;
-    margin: 45%;
+    display: flex;
+    align-items: center;
     width: 25rem;
 }
 
@@ -160,8 +230,11 @@ document.querySelector('.messagesIa').textContent = chatsIA;
     justify-content: center;
 }
 
+#submit {
+    outline: none;
+}
 
-.homepage__container__zonedesaisie__inputcontainer__icone--button {
+.homepage__container__zonedesaisie__inputcontainer__icone--button{
     border: none;
     background: none;
     cursor: pointer;
@@ -182,7 +255,14 @@ document.querySelector('.messagesIa').textContent = chatsIA;
 
 }
 
-.homepage__historique__dropdown--button {
+.buttonSup{
+    background: none;
+    border: 1px solid #CEC2B2;
+    position: absolute;
+    right: 25%;
+}
+
+.homepage__historique__dropdown--button{
     border: none;
     background: none;
     cursor: pointer;
@@ -216,7 +296,7 @@ document.querySelector('.messagesIa').textContent = chatsIA;
     display: block;
 }
 
-.messagesUser {
+.message--user {
     border: 1px solid #E3E0DE;
     border-radius: 20px;
     margin: 5px 10px;
@@ -225,7 +305,7 @@ document.querySelector('.messagesIa').textContent = chatsIA;
     text-align: end;
 }
 
-.messagesIa {
+.message--assistant {
     border: 1px solid #CEC2B2;
     border-radius: 20px;
     margin: 5px 10px;
