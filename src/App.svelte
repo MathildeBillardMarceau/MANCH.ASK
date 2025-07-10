@@ -46,10 +46,17 @@ async function addConversation (event) {
             title : title,
         };
 
-        await pb.collection('conversations').create(newConversations);
-        conversations.push(newConversations);
-        console.log({conversations});
+        const created = await pb.collection('conversations').create(newConversations);
+        conversations.push({
+                id: created.id,
+                title: created.title
+            });
+        
+        currentConversationId = created.id;
+
+        await loadMessagesForConversation(created.id);
         title = "";
+
         
         
     } catch (error) {
