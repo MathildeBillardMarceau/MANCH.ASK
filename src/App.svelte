@@ -63,10 +63,10 @@ async function addConversation (event) {
     }    
 }
 
-// function selectConversation(conversation) {
-//   currentConversationId = conversation.id;
-//   loadMessagesForConversation(conversation.id);
-// }
+function selectConversation(conversation) {
+  currentConversationId = conversation.id;
+  loadMessagesForConversation(conversation.id);
+}
 
 async function removeConversation (id) {
     await fetch('http://localhost:5174/conversation/' + idConversation, 
@@ -76,24 +76,31 @@ async function removeConversation (id) {
     );
 }
 
-// async function loadMessagesForConversation(conversationId) {
-//   try {
-//     const result = await pb.collection('messages').getFullList({
-//       filter: `conversations = "${conversationId}"`,
-//       sort: 'created'
-//     });
+function handleConversationClick(event, conversation) {
+  event.preventDefault();
+  selectConversation(conversation);
+}
 
-//     messages = result.map(record => ({
-//       role: record.role,
-//       content: record.content,
-//       created: new Date(record.created),
-//     }));
 
-//     console.log('Messages de la conversation :', messages);
-//   } catch (error) {
-//     console.error("Erreur chargement messages:", error);
-//   }
-// }
+async function loadMessagesForConversation(conversationId) {
+    try {
+        const result = await pb.collection('messages').getFullList({
+            filter: `conversations = "${conversationId}"`,
+            sort: 'created'
+        });
+        
+        messages = result.map(record => ({
+            role: record.role,
+            content: record.content,
+            created: new Date(record.created),
+        }));
+        messages = [];
+        
+    console.log('Messages de la conversation :', messages);
+  } catch (error) {
+    console.error("Erreur chargement messages:", error);
+  }
+}
 
 async function handleMessageSubmit (event) {
     event.preventDefault();
@@ -143,6 +150,7 @@ async function handleMessageSubmit (event) {
         role: "assistant",
         content: result.choices[0].message.content,
         created: new Date(),
+        conversations: currentConversationId
         }
         
         messages.push(assistantMessage);
@@ -165,10 +173,14 @@ onMount(async () => {
   try {
       
       
-      const conversationsResult = await pb.collection('conversations').getFullList({
-          sort: '-created',
-        });
+      const conversationsResult = await pb.collection('conversations').getFullList();
+      conversations = conversationsResult;
+
         
+        if (currentConversationId) {
+            await loadMessagesForConversation(currentConversationId);
+                }
+
         conversations = conversationsResult.map(record => ({
             id: record.id,
             title: record.title,
@@ -263,7 +275,7 @@ onMount(async () => {
             {#each conversations as conversation}
             <div class="homepage__historique__dropdown">
                 <div class="homepage__historique__dropdown--child">
-                    <a href="#" onclick={() => selectConversation(conversation)} target="_blank"> {conversation.title}
+                    <a href="#" onclick={(e) => handleConversationClick(e, conversation)}>{conversation.title}
                     </a>
                     <button aria-label="supprimer" type="button" class="buttonSup"> X </button>
                 </div>
