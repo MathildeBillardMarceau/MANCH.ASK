@@ -10,9 +10,9 @@ let token = $state ("");
 let mistralToken = $state(localStorage.getItem("mistraltoken"))
 let title = $state("");
 let conversations = $state([
-    {
-        title : "Bonjour",
-    }
+     {
+         title : "Bonjour",
+     }
 ]);
 let newConversations = $state ({title : ""});
 
@@ -38,13 +38,42 @@ let messages = $state ([]);
 async function addConversation (event) {
     event.preventDefault();
 
-    conversations.push(newConversations);
-    console.log({conversations});
+    if(conversations) {
+    try {
+        const newConversations = {
+            title : title,
+        };
 
-    newConversations = {
-        title : "",
-    };
+        await pb.collection('conversations').create(newConversations);
+        conversations.push(newConversations);
+        console.log({conversations});
+        title = "";
+        
+        
+    } catch (error) {
+        console.error('send message error:', error);
+    }
 }
+
+
+    else {
+      alert('Veuillez entrer un titre valide.');
+    }    
+}
+
+
+
+// function removeConversation (event) {
+//     event.preventDefault();
+
+
+//     conversations.push(newConversations);
+//     console.log({conversations});
+
+//     newConversations = {
+//         title : "",
+//     };
+// }
 
 async function handleMessageSubmit (event) {
     event.preventDefault();
@@ -129,7 +158,7 @@ onMount(async () => {
     console.error('Erreur lors du chargement des messages :', err);
   }
 });
-
+    console.log("Conversations :", conversations);
 </script>
 
 <div class="homepage__container" >
@@ -149,7 +178,7 @@ onMount(async () => {
         <p class="homepage__container__header--questions">Tu te poses des questions ? <br> Manchas te réponds.</p>
         
         <form onsubmit="{addConversation}" class="add__conversation">
-            <input bind:value={newConversations.title} class="add__conversation--input" type="text" placeholder="ajoute une conversation">
+            <input bind:value={title} class="add__conversation--input" type="text" placeholder="ajoute une conversation">
             <button type="submit" class="buttonAdd"> + </button>
         </form>
     </header> 
@@ -190,10 +219,12 @@ onMount(async () => {
         </div>
         </main>
         
+
         <footer class="historique">
             <button class="homepage__historique__dropdown--button">
                 <img src="/elements/historique.png" alt="" class="homepage__container__footer">
             </button>
+
             {#each conversations as conversation}
             <div class="homepage__historique__dropdown">
                 <div class="homepage__historique__dropdown--child">
