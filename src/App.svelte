@@ -68,17 +68,17 @@ function selectConversation(conversation) {
   loadMessagesForConversation(conversation.id);
 }
 
-async function removeConversation (id) {
-    await fetch('http://localhost:5174/conversation/' + idConversation, 
-    {
-        method: 'DELETE'
-    }
-    );
-}
+// async function removeConversation (id) {
+//     await fetch('http://localhost:5174/conversation/' + idConversation, 
+//     {
+//         method: 'DELETE'
+//     }
+//     );
+// }
 
-function handleConversationClick(event, conversation) {
+function handleConversationClick(event, conversationId) {
   event.preventDefault();
-  selectConversation(conversation);
+  selectConversation(conversationId);
 }
 
 
@@ -94,7 +94,7 @@ async function loadMessagesForConversation(conversationId) {
             content: record.content,
             created: new Date(record.created),
         }));
-        messages = [];
+
         
     console.log('Messages de la conversation :', messages);
   } catch (error) {
@@ -119,7 +119,8 @@ async function handleMessageSubmit (event) {
 
         messages.push(newMessage);
         
-        await pb.collection('messages').create(newMessage);
+        const createdMsg = await pb.collection('messages').create(newMessage);
+        console.log("Message créé :", createdMsg);
         messageContent = "";
 
         const formattedMessages = messages.map((msg) => ({
@@ -170,9 +171,7 @@ async function handleMessageSubmit (event) {
 }
 
 onMount(async () => {
-  try {
-      
-      
+  try {            
       const conversationsResult = await pb.collection('conversations').getFullList();
       conversations = conversationsResult;
 
@@ -231,7 +230,6 @@ onMount(async () => {
     </header> 
         
     <main class="zonedesaisie">
-        
         <div class="homepage__container__zonedesaisie__inputcontainer" >
             
                   <section class="messages">
