@@ -9,7 +9,11 @@ const pb = new PocketBase('http://127.0.0.1:8090');
 let token = $state ("");
 let mistralToken = $state(localStorage.getItem("mistraltoken"))
 let title = $state("");
-let conversations = $state([]);
+let conversations = $state([
+    {
+        title : "Bonjour",
+    }
+]);
 let newConversations = $state ({title : ""});
 
 function saveToken(event) {
@@ -33,6 +37,7 @@ let messages = $state ([]);
 
 async function addConversation (event) {
     event.preventDefault();
+
     conversations.push(newConversations);
     console.log({conversations});
 
@@ -144,7 +149,7 @@ onMount(async () => {
         <p class="homepage__container__header--questions">Tu te poses des questions ? <br> Manchas te réponds.</p>
         
         <form onsubmit="{addConversation}" class="add__conversation">
-            <input bind:value={conversations.title} class="add__conversation--input" type="text" placeholder="ajoute une conversation">
+            <input bind:value={newConversations.title} class="add__conversation--input" type="text" placeholder="ajoute une conversation">
             <button type="submit" class="buttonAdd"> + </button>
         </form>
     </header> 
