@@ -8,6 +8,9 @@ import PocketBase from 'pocketbase';
 const pb = new PocketBase('http://127.0.0.1:8090');
 let token = $state ("");
 let mistralToken = $state(localStorage.getItem("mistraltoken"))
+let title = $state("");
+let conversations = $state([]);
+let newConversations = $state ({title : ""});
 
 function saveToken(event) {
     event.preventDefault();
@@ -28,6 +31,16 @@ let messageContent = $state ("");
 
 let messages = $state ([]);
 
+async function addConversation (event) {
+    event.preventDefault();
+    conversations.push(newConversations);
+    console.log({conversations});
+
+    newConversations = {
+        title : "",
+    };
+}
+
 async function handleMessageSubmit (event) {
     event.preventDefault();
     console.log(messageContent);
@@ -39,7 +52,6 @@ async function handleMessageSubmit (event) {
             const newMessage = {
                 role: "user",
                 content: messageContent,
-          
                 created: new Date(), 
             };
 
@@ -52,16 +64,6 @@ async function handleMessageSubmit (event) {
         role: msg.role,
         content: msg.content,
       }));
-
-        // const formattedMessages = [];
-        //     for (const message of messages) {
-        //     formattedMessages.push({
-        //     role: "assistant",
-        //     content: data.content,
-
-        //     created: new Date(), 
-        //   });
-        // }
 
         const response = await fetch ("https://api.mistral.ai/v1/chat/completions",  {
             method: "POST",
@@ -81,9 +83,6 @@ async function handleMessageSubmit (event) {
 
         const result = await response.json();
         console.log(result);
-
-        // const data = result.choices[0]
-        // console.log("Premier choix retourné :", data);
 
         const assistantMessage = {
         role: "assistant",
@@ -106,6 +105,7 @@ async function handleMessageSubmit (event) {
       alert('Veuillez entrer un message valide.');
     }    
 }
+
 
 onMount(async () => {
   try {
@@ -142,16 +142,16 @@ onMount(async () => {
             <img src="/elements/logo.png" alt="inscription MANCHASK suivi du chat Manchas" class="logo">
         </div>
         <p class="homepage__container__header--questions">Tu te poses des questions ? <br> Manchas te réponds.</p>
+        
+        <form onsubmit="{addConversation}" class="add__conversation">
+            <input bind:value={conversations.title} class="add__conversation--input" type="text" placeholder="ajoute une conversation">
+            <button type="submit" class="buttonAdd"> + </button>
+        </form>
     </header> 
-    
+        
     <main class="zonedesaisie">
         
         <div class="homepage__container__zonedesaisie__inputcontainer" >
-            
-            <!-- {#if messageContent !== "" }
-                <p class="messagesUser">{messageContent}</p>
-                <p class="messagesIa"><Markdown md={formattedMessages}/></p>
-            {/if} -->
             
                   <section class="messages">
         {#each messages as message}
@@ -186,25 +186,35 @@ onMount(async () => {
         </main>
         
         <footer class="historique">
+            <button class="homepage__historique__dropdown--button">
+                <img src="/elements/historique.png" alt="" class="homepage__container__footer">
+            </button>
+            {#each conversations as conversation}
             <div class="homepage__historique__dropdown">
-                <button class="homepage__historique__dropdown--button">
-                    <img src="/elements/historique.png" alt="" class="homepage__container__footer">
-                </button>
                 <div class="homepage__historique__dropdown--child">
-                    <a href="http://localhost:5173/" target="_blank"> Pourquoi le ciel est bleu ?
-                    <button type="button" class="buttonSup"> X </button>
-                    </a>
-                    <a href="http://localhost:5173/" target="_blank"> Combien de croquettes ?
+                    <a href="http://localhost:5173/" target="_blank"> {conversation.title}
                     <button type="button" class="buttonSup"> X </button>
                     </a>
                 </div>
             </div>
+            {/each}
         </footer>
         {/if}
 </div>
 
 <style>
+.add__conversation{
+    display: flex;
+    justify-content: center;
+    margin: 10px 0;
+    border-radius: 8px;
+}
 
+.add__conversation--input {
+    height: 1.2rem;
+    border-radius: 10px;
+    border: 0.5px solid #000000;
+}
 
 .form__token {
     justify-content: center;
@@ -271,9 +281,18 @@ onMount(async () => {
 
 .historique {
     display: flex;
+    flex-direction: column;
     justify-content: center;
     position: relative;
+    outline: none;
+}
 
+.buttonAdd{
+    background: none;
+    border: 1px solid #CEC2B2; 
+    outline: none;
+    cursor: pointer;
+    border-radius: 8px;
 }
 
 .buttonSup{
