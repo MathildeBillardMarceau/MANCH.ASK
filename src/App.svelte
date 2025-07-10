@@ -5,16 +5,18 @@ import {onMount} from 'svelte';
 import Markdown from 'svelte-exmarkdown';
 import PocketBase from 'pocketbase';
 // import "./md.css";
-const pb = new PocketBase('http://127.0.0.1:8090');
+const pb = new PocketBase('http://127.0.0.1:8090/');
 let token = $state ("");
 let mistralToken = $state(localStorage.getItem("mistraltoken"))
 let title = $state("");
-let conversations = $state([
-     {
-         title : "Bonjour",
-     }
-]);
-let newConversations = $state ({title : ""});
+let conversations = $state([]);
+let newConversations = $state ({
+    title : "",
+    id: ""
+});
+let currentConversationId = $state(null);
+
+
 
 function saveToken(event) {
     event.preventDefault();
@@ -61,18 +63,36 @@ async function addConversation (event) {
     }    
 }
 
+// function selectConversation(conversation) {
+//   currentConversationId = conversation.id;
+//   loadMessagesForConversation(conversation.id);
+// }
 
+async function removeConversation (id) {
+    await fetch('http://localhost:5174/conversation/' + idConversation, 
+    {
+        method: 'DELETE'
+    }
+    );
+}
 
-// function removeConversation (event) {
-//     event.preventDefault();
+// async function loadMessagesForConversation(conversationId) {
+//   try {
+//     const result = await pb.collection('messages').getFullList({
+//       filter: `conversations = "${conversationId}"`,
+//       sort: 'created'
+//     });
 
+//     messages = result.map(record => ({
+//       role: record.role,
+//       content: record.content,
+//       created: new Date(record.created),
+//     }));
 
-//     conversations.push(newConversations);
-//     console.log({conversations});
-
-//     newConversations = {
-//         title : "",
-//     };
+//     console.log('Messages de la conversation :', messages);
+//   } catch (error) {
+//     console.error("Erreur chargement messages:", error);
+//   }
 // }
 
 async function handleMessageSubmit (event) {
@@ -86,7 +106,8 @@ async function handleMessageSubmit (event) {
             const newMessage = {
                 role: "user",
                 content: messageContent,
-                created: new Date(), 
+                created: new Date(),
+                conversations: currentConversationId
             };
 
         messages.push(newMessage);
@@ -140,25 +161,39 @@ async function handleMessageSubmit (event) {
     }    
 }
 
-
 onMount(async () => {
   try {
-    const result = await pb.collection('messages').getFullList({
-      sort: 'created', 
-    });
+      
+      
+      const conversationsResult = await pb.collection('conversations').getFullList({
+          sort: '-created',
+        });
+        
+        conversations = conversationsResult.map(record => ({
+            id: record.id,
+            title: record.title,
+        }));
+        
+        console.log('Conversations chargées depuis PocketBase :', conversations);
 
-    messages = result.map(record => ({
-      role: record.role,
-      content: record.content,
-      created: new Date(record.created)
-    }));
-
-    console.log('Messages chargés depuis PocketBase :', messages);
-  } catch (err) {
-    console.error('Erreur lors du chargement des messages :', err);
+        const result = await pb.collection('messages').getFullList({
+          sort: 'created', 
+        });
+    
+        messages = result.map(record => ({
+          role: record.role,
+          content: record.content,
+          created: new Date(record.created)
+        }));
+    
+        console.log('Messages chargés depuis PocketBase :', messages);
+        
+    } catch (err) {
+        console.error('Erreur lors du chargement des messages :', err);
   }
+  
 });
-    console.log("Conversations :", conversations);
+    // console.log("Conversations :", {conversations});
 </script>
 
 <div class="homepage__container" >
@@ -228,9 +263,9 @@ onMount(async () => {
             {#each conversations as conversation}
             <div class="homepage__historique__dropdown">
                 <div class="homepage__historique__dropdown--child">
-                    <a href="http://localhost:5173/" target="_blank"> {conversation.title}
-                    <button type="button" class="buttonSup"> X </button>
+                    <a href="#" onclick={() => selectConversation(conversation)} target="_blank"> {conversation.title}
                     </a>
+                    <button aria-label="supprimer" type="button" class="buttonSup"> X </button>
                 </div>
             </div>
             {/each}
@@ -249,13 +284,15 @@ onMount(async () => {
 .add__conversation--input {
     height: 1.2rem;
     border-radius: 10px;
-    border: 0.5px solid #000000;
+    border: 0.5px solid grey;
 }
 
 .form__token {
     justify-content: center;
     display: flex;
-    align-items: center;
+    margin: auto;
+    padding-top: 20%;
+    height: 2rem;
     width: 25rem;
 }
 
@@ -263,6 +300,8 @@ onMount(async () => {
     border: none;
     border-radius: 30px;
     margin: 0 5px;
+    outline-style: solid;
+    outline-color: #CEC2B2;
 }
 
 .homepage__container__zonedesaisie__inputcontainer {
@@ -334,26 +373,34 @@ onMount(async () => {
 .buttonSup{
     background: none;
     border: 1px solid #CEC2B2;
-    position: absolute;
+    justify-content: space-between;
+    cursor: pointer;
     right: 25%;
+    align-self: center;
+}
+
+.homepage__historique__dropdown{
+    display: flex;
+    justify-content: center;
+
 }
 
 .homepage__historique__dropdown--button{
     border: none;
     background: none;
     cursor: pointer;
-} 
+}
 
 
 .homepage__historique__dropdown--child {
-    display: none;
-    justify-content: center;
+    display: flex;
     background: white;
-    min-width: 200px;
+    width: 70%;
     box-shadow: 0 8px 16px rgba(0,0,0,0.2);
     z-index: 1;
     border-radius: 8px;
     margin-top: 10px;
+    justify-content: space-between;
 }
 
 
@@ -361,7 +408,8 @@ onMount(async () => {
     color: black;
     padding: 10px;
     text-decoration: none;
-    display: block;
+    display: inline-block;
+
 }
 
 .homepage__historique__dropdown--child a:hover {
@@ -369,7 +417,7 @@ onMount(async () => {
 }
 
 .historique:hover .homepage__historique__dropdown--child {
-    display: block;
+    display: flex;
 }
 
 .message--user {
