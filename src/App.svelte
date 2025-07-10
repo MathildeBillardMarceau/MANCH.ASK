@@ -75,13 +75,34 @@ function selectConversation(conversation) {
   loadMessagesForConversation(conversation.id);
 }
 
-// async function removeConversation (id) {
-//     await fetch('http://localhost:5174/conversation/' + idConversation, 
-//     {
-//         method: 'DELETE'
-//     }
-//     );
-// }
+async function removeConversation(id) {
+  try {
+    // Supprime d'abord les messages liés à cette conversation
+    const relatedMessages = await pb.collection('messages').getFullList({
+      filter: `conversations = "${id}"`
+    });
+
+    for (const msg of relatedMessages) {
+      await pb.collection('messages').delete(msg.id);
+    }
+
+    // Ensuite supprime la conversation elle-même
+    await pb.collection('conversations').delete(id);
+
+    // Mets à jour localement les conversations
+    conversations = conversations.filter(c => c.id !== id);
+
+    // Si c'était la conversation active, on la désélectionne
+    if (currentConversationId === id) {
+      currentConversationId = null;
+      messages = [];
+    }
+
+    console.log("Conversation supprimée :", id);
+  } catch (error) {
+    console.error("Erreur suppression conversation :", error);
+  }
+}
 
 function handleConversationClick(event, conversationId) {
   event.preventDefault();
@@ -282,7 +303,7 @@ onMount(async () => {
                 <div class="homepage__historique__dropdown--child">
                     <a href="#" onclick={(e) => handleConversationClick(e, conversation)}>{conversation.title}
                     </a>
-                    <button aria-label="supprimer" type="button" class="buttonSup"> X </button>
+                    <button onclick={() => removeConversation(conversation.id)} aria-label="supprimer" type="button" class="buttonSup"> X </button>
                 </div>
             </div>
             {/each}
