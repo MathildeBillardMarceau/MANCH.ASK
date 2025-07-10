@@ -109,7 +109,28 @@
     Je n'ai encore une fois pas pensé à regarder directement sur le site de pocketbase si il y avait des ressources avant de demander à chat gpt.
     
 - Les prochaines étapes si tu avais eu plus de temps:
-
     ```
     - de chatgpt
     + de plan de code, pour mieux m'organiser
+
+##Jour 4
+
+- Ce que j'ai mis en place techniquement (même si ça n'est “pas fini”):
+  ```
+  Finito.
+
+ - Ce que je voulais faire mais que tu n’as pas réussi à faire:
+    ```
+    A 17h je n'avais pas réussi à bien assigner mes messages aux conversations mais comme on a eu du rab GRACE AU REDRESSEMENT JUDICIAIRE, j'ai fini par réussir. 
+
+- Les points bloquants ou les choix que tu as faits:
+    ```
+    J'ai beaucoup plus analysé et relu mon code à moi même pour comprendre le fonctionnement et ce qui pouvait bloquer.
+
+- Ce que tu referais différemment:
+    ```
+    Je sais pas trop là...
+
+- Les prochaines étapes si tu avais eu plus de temps:
+    ```
+    Pouvoir adapter l'interface à une photo de chat différente pour que l'appli soit personnalisable ? chacun son Ch.ask !
