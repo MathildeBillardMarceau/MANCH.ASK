@@ -1,8 +1,10 @@
 # Client de chat IA avec pocketbase
 
 ## Wireframes 
-fait avec Figma
+fait avec Figma. J'ai créé la palette de couleur de la charte graphique 
+avec coolos.co. J'ai utilisé l'outil pipette pour extraire une première couleur sur une photographie de mon chat. Coolors m'a ensuite proposé une déclinaison de couleur que j'ai pu modifier. Pour trouver une paire de typo j'ai utilisé fontpair.co et les icones viennent de icon8.com.
 
+![Palette de couleur](/public/elements/palette.png)
 ![MANCH.ASK wireframe mobile](/public/elements/Homepage.png) 
 ![MANCH.ASK wireframe desktop](/public/elements/desktopHomepage.png)
 
@@ -27,8 +29,10 @@ ___
 # AI chat client with PocketBase
 
 ## Wireframes 
-created with Figma
+Created with Figma. I created the color palette for the graphic charter 
+using coolos.co. I used the eyedropper tool to extract an initial color from a photograph of my cat. Coolors then suggested a range of colors that I was able to modify. To find a pair of fonts, I used fontpair.co, and the icons are from icon8.com.
 
+![Color palette](/public/elements/palette.png)
 ![MANCH.ASK mobile wireframe](/public/elements/Homepage.png) 
 ![MANCH.ASK desktop wireframe](/public/elements/desktopHomepage.png)
 
