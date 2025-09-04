@@ -4,7 +4,7 @@
 import {onMount} from 'svelte';
 import Markdown from 'svelte-exmarkdown';
 import PocketBase from 'pocketbase';
-// import "./md.css";
+//import "./md.css";
 const pb = new PocketBase('http://127.0.0.1:8090/');
 let token = $state ("");
 let mistralToken = $state(localStorage.getItem("mistraltoken"))
@@ -156,12 +156,11 @@ async function handleMessageSubmit (event) {
         content: msg.content,
       }));
 
-        const response = await fetch ("https://api.mistral.ai/v1/chat/completions",  {
+        const response = await fetch ("http://localhost:11434/api/chat",  {
             method: "POST",
             headers: {
-                "content-type" : "application/json",
-                Accept : "application/json",
-                Authorization: `Bearer ${mistralToken}`,
+                "Content-Type" : "application/json",
+
                     },
             body: JSON.stringify(
                 {
