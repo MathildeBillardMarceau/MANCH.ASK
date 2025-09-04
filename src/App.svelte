@@ -156,7 +156,7 @@ async function handleMessageSubmit (event) {
         content: msg.content,
       }));
 
-        const response = await fetch ("http://localhost:11434/api/chat",  {
+        const response = await fetch ("https://api.mistral.ai/v1/chat/completions",  {
             method: "POST",
             headers: {
                 "Content-Type" : "application/json",
