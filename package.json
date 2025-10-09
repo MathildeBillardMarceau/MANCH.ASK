@@ -9,12 +9,12 @@
     "preview": "vite preview"
   },
   "devDependencies": {
-    "@sveltejs/vite-plugin-svelte": "^5.0.3",
+    "@sveltejs/vite-plugin-svelte": "^5.1.1",
     "svelte": "^5.20.2",
     "vite": "^6.2.0"
   },
   "dependencies": {
-    "svelte-exmarkdown": "^5.0.1",
-    "pocketbase": "^0.x.x"
+    "pocketbase": "^0.x.x",
+    "svelte-exmarkdown": "^5.0.1"
   }
 }

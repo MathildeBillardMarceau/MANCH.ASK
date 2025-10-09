@@ -1,13 +1,11 @@
-<script>
-// @ts-nocheck
 
+
+<script>
 import {onMount} from 'svelte';
 import Markdown from 'svelte-exmarkdown';
-import PocketBase from 'pocketbase';
-//import "./md.css";
-const pb = new PocketBase('http://127.0.0.1:8090/');
+
 let token = $state ("");
-let mistralToken = $state(localStorage.getItem("mistraltoken"))
+//let mistralToken = $state(localStorage.getItem("mistraltoken"))
 let title = $state("");
 let conversations = $state([]);
 let newConversations = $state ({
@@ -16,23 +14,6 @@ let newConversations = $state ({
 });
 let currentConversationId = $state(null);
 
-
-
-function saveToken(event) {
-    event.preventDefault();
-    
-    token = token.trim();
-    
-    if (token) {
-    localStorage.setItem('mistralToken', token);
-    mistralToken = token;
-    } 
-    else {
-      alert('Veuillez entrer une clé Mistral valide.');
-    }
-}
-
-let error = $state(null);
 let messageContent = $state ("");
 
 let messages = $state ([]);
@@ -164,38 +145,37 @@ async function handleMessageSubmit (event) {
                     },
             body: JSON.stringify(
                 {
-                    model: "mistral-small-latest",
+                    model: "Mistral:latest",
                     messages: formattedMessages,
+                    stream: true,
                 }
             ),
             }
         );
 
-        const result = await response.json();
-        console.log(result);
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let result = "";
 
-        const assistantMessage = {
-        role: "assistant",
-        content: result.choices[0].message.content,
-        created: new Date(),
-        conversations: currentConversationId
+    while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value);
+        const lines = chunk.split("\n").filter(line => line.trim() !== "");
+    for (const line of lines) {
+        const data = JSON.parse(line);
+        result += data.message.content; // Ajoute chaque morceau de réponse
+        console.log(data.message.content); // Affiche en temps réel
+    }
         }
-        
-        messages.push(assistantMessage);
-        await pb.collection('messages').create(assistantMessage);
-        console.log("Messages après ajout :", messages);
-       
-        
+
         } catch (error) {
             console.error('send message error:', error);
         }
+        } else {
+            alert('Veuillez entrer un message valide.');
+        }
     }
-
-
-    else {
-      alert('Veuillez entrer un message valide.');
-    }    
-}
 
 onMount(async () => {
   try {            
@@ -231,264 +211,288 @@ onMount(async () => {
   }
   
 });
-    // console.log("Conversations :", {conversations});
+// console.log("Conversations :", {conversations});
+
 </script>
 
-<div class="homepage__container" >
-
-    {#if !mistralToken}
-    <form class="form__token" onsubmit={saveToken}>
-      <input class="form__token--input" type="text" name="token" placeholder="  Entrez votre clé Mistral" bind:value={token} />
-      <button class="form__token--button" type="submit">Enregistrer</button>
-    </form>
-
-    {:else}
-    
+<div class="homepage__container">
     <header class="homepage__container__header">
         <div class="homepage__container_header--logo">
-            <img src="/elements/logo.png" alt="inscription MANCHASK suivi du chat Manchas" class="logo">
+            <img
+                src="/elements/logo.png"
+                alt="inscription MANCHASK suivi du chat Manchas"
+                class="logo"
+            />
         </div>
-        <p class="homepage__container__header--questions">Tu te poses des questions ? <br> Manchas te réponds.</p>
-        
-        <form onsubmit="{addConversation}" class="add__conversation">
-            <input bind:value={title} class="add__conversation--input" type="text" placeholder="ajoute une conversation">
+        <p class="homepage__container__header--questions">
+            Tu te poses des questions ? <br /> Manchas te réponds.
+        </p>
+
+        <form onsubmit={addConversation} class="add__conversation">
+            <input
+                bind:value={title}
+                class="add__conversation--input"
+                type="text"
+                placeholder="ajoute une conversation"
+            />
             <button type="submit" class="buttonAdd"> + </button>
         </form>
-    </header> 
-        
+    </header>
+
     <main class="zonedesaisie">
-        <div class="homepage__container__zonedesaisie__inputcontainer" >
-            
-                  <section class="messages">
-        {#each messages as message}
-          <div class={`message message--${message.role}`}>
-            <div class="markdown-body">
-              <Markdown md={message.content} />
-            </div>
-            <!-- 
+        <div class="homepage__container__zonedesaisie__inputcontainer">
+            <section class="messages">
+                {#each messages as message}
+                    <div class={`message message--${message.role}`}>
+                        <div class="markdown-body">
+                            <Markdown md={message.content} />
+                        </div>
+                        <!-- 
               on met en forme l'heure comme l'affichage le prévoir 
               on récupère la date du message et on la transforme en ne conservant que l'heure au format français (ex : 18:30) 
             -->
-            <time datetime={message.created}
-              >{new Date(message.created).toLocaleTimeString("fr-FR", {
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
-            </time>
-        </div>
-        {/each}
-      </section>
+                        <time datetime={message.created}
+                            >{new Date(message.created).toLocaleTimeString(
+                                "fr-FR",
+                                {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                },
+                            )}
+                        </time>
+                    </div>
+                {/each}
+            </section>
 
-            <form onsubmit={handleMessageSubmit} class="homepage__container__zonedesaisie__inputcontainer__form"> 
-                
-                <input bind:value={messageContent} type="text" class="homepage__container__zonedesaisie__inputcontainer__form--input" placeholder=" Pose ta question à Manchas..." id="submit">
-                <button type="submit" aria-label="Envoyer" class="homepage__container__zonedesaisie__inputcontainer__icone--button">  
-                    <img src="/elements/icons8-search-50.png" alt="Envoyer" style="width: 42px; height: 42px;">
+            <form
+                onsubmit={handleMessageSubmit}
+                class="homepage__container__zonedesaisie__inputcontainer__form"
+            >
+                <input
+                    bind:value={messageContent}
+                    type="text"
+                    class="homepage__container__zonedesaisie__inputcontainer__form--input"
+                    placeholder=" Pose ta question à Manchas..."
+                    id="submit"
+                />
+                <button
+                    type="submit"
+                    aria-label="Envoyer"
+                    class="homepage__container__zonedesaisie__inputcontainer__icone--button"
+                >
+                    <img
+                        src="/elements/icons8-search-50.png"
+                        alt="Envoyer"
+                        style="width: 42px; height: 42px;"
+                    />
                 </button>
-                
             </form>
-                        
         </div>
-        </main>
-        
+    </main>
 
-        <footer class="historique">
-            <button class="homepage__historique__dropdown--button">
-                <img src="/elements/historique.png" alt="" class="homepage__container__footer">
-            </button>
+    <footer class="historique">
+        <button class="homepage__historique__dropdown--button">
+            <img
+                src="/elements/historique.png"
+                alt=""
+                class="homepage__container__footer"
+            />
+        </button>
 
-            {#each conversations as conversation}
+        {#each conversations as conversation}
             <div class="homepage__historique__dropdown">
                 <div class="homepage__historique__dropdown--child">
-                    <a href="#" onclick={(e) => handleConversationClick(e, conversation)}>{conversation.title}
+                    <a
+                        href="#"
+                        onclick={(e) =>
+                            handleConversationClick(e, conversation)}
+                        >{conversation.title}
                     </a>
-                    <button onclick={() => removeConversation(conversation.id)} aria-label="supprimer" type="button" class="buttonSup"> X </button>
+                    <button
+                        onclick={() => removeConversation(conversation.id)}
+                        aria-label="supprimer"
+                        type="button"
+                        class="buttonSup"
+                    >
+                        X
+                    </button>
                 </div>
             </div>
-            {/each}
-        </footer>
-        {/if}
+        {/each}
+    </footer>
 </div>
 
 <style>
-.add__conversation{
-    display: flex;
-    justify-content: center;
-    margin: 10px 0;
-    border-radius: 8px;
-}
+    .add__conversation {
+        display: flex;
+        justify-content: center;
+        margin: 10px 0;
+        border-radius: 8px;
+    }
 
-.add__conversation--input {
-    height: 1.2rem;
-    border-radius: 10px;
-    border: 0.5px solid grey;
-}
+    .add__conversation--input {
+        height: 1.2rem;
+        border-radius: 10px;
+        border: 0.5px solid grey;
+    }
 
-.form__token {
-    justify-content: center;
-    display: flex;
-    margin: auto;
-    padding-top: 20%;
-    height: 2rem;
-    width: 25rem;
-}
+    .form__token {
+        justify-content: center;
+        display: flex;
+        margin: auto;
+        padding-top: 20%;
+        height: 2rem;
+        width: 25rem;
+    }
 
-.form__token--button, .form__token--input{
-    border: none;
-    border-radius: 30px;
-    margin: 0 5px;
-    outline-style: solid;
-    outline-color: #CEC2B2;
-}
+    .form__token--button,
+    .form__token--input {
+        border: none;
+        border-radius: 30px;
+        margin: 0 5px;
+        outline-style: solid;
+        outline-color: #cec2b2;
+    }
 
-.form__token--input {
-    display: inherit;
-}
+    .form__token--input {
+        display: inherit;
+    }
 
-.homepage__container__zonedesaisie__inputcontainer {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    align-items: stretch;
-    border: 1px solid grey;
-    border-radius: 25px;
-    height: 55vh;
-    background-color: whitesmoke;
-    overflow-y: scroll;
+    .homepage__container__zonedesaisie__inputcontainer {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: stretch;
+        border: 1px solid grey;
+        border-radius: 25px;
+        height: 55vh;
+        background-color: whitesmoke;
+        overflow-y: scroll;
+    }
 
-}
+    .homepage__container__zonedesaisie {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        align-items: center;
+        border: 1px solid grey;
+        border-radius: 25px;
+        height: 55vh;
+        background-color: whitesmoke;
+        overflow-y: scroll;
+    }
 
-.homepage__container__zonedesaisie {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    align-items: center;
-    border: 1px solid grey;
-    border-radius: 25px;
-    height: 55vh;
-    background-color: whitesmoke;
-    overflow-y: scroll;
+    .homepage__container__zonedesaisie__inputcontainer__form {
+        height: 2.5rem;
+        margin: 15px;
+        display: flex;
+    }
 
-}
+    .homepage__container__zonedesaisie__inputcontainer__form--input {
+        width: 100%;
+        height: 2.5rem;
+        border: 1px solid black;
+        /* background-color: aqua; */
+        border-radius: 35px;
+        box-sizing: border-box;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    }
 
- .homepage__container__zonedesaisie__inputcontainer__form {
-    height: 2.5rem;
-    margin: 15px;
-    display: flex;
-} 
+    #submit {
+        outline: none;
+        size: 10em;
+    }
 
-.homepage__container__zonedesaisie__inputcontainer__form--input {
+    .homepage__container__zonedesaisie__inputcontainer__icone--button {
+        border: none;
+        background: none;
+        cursor: pointer;
+    }
 
-    width: 100%;
-    height: 2.5rem;
-    border: 1px solid black;
-    /* background-color: aqua; */
-    border-radius: 35px;
-    box-sizing: border-box;
-    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    .homepage__container__header--questions {
+        text-align: end;
+        margin: 3% 5%;
+    }
 
-}
+    .historique {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        position: relative;
+        outline: none;
+    }
 
-#submit {
-    outline: none;
-    size: 10em;
+    .buttonAdd {
+        background: none;
+        border: 1px solid #cec2b2;
+        outline: none;
+        cursor: pointer;
+        border-radius: 8px;
+    }
 
-}
+    .buttonSup {
+        background: none;
+        border: 1px solid #cec2b2;
+        justify-content: space-between;
+        cursor: pointer;
+        right: 25%;
+        align-self: center;
+    }
 
-.homepage__container__zonedesaisie__inputcontainer__icone--button{
-    border: none;
-    background: none;
-    cursor: pointer;
-}
+    .homepage__historique__dropdown {
+        display: flex;
+        justify-content: center;
+    }
 
-.homepage__container__header--questions {
-    text-align: end;
-    margin: 3% 5%;
-}
+    .homepage__historique__dropdown--button {
+        border: none;
+        background: none;
+        cursor: pointer;
+    }
 
-.historique {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    position: relative;
-    outline: none;
-}
+    .homepage__historique__dropdown--child {
+        display: flex;
+        background: white;
+        width: 70%;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        z-index: 1;
+        border-radius: 8px;
+        margin-top: 10px;
+        justify-content: space-between;
+    }
 
-.buttonAdd{
-    background: none;
-    border: 1px solid #CEC2B2; 
-    outline: none;
-    cursor: pointer;
-    border-radius: 8px;
-}
+    .homepage__historique__dropdown--child a {
+        color: black;
+        padding: 10px;
+        text-decoration: none;
+        display: inline-block;
+    }
 
-.buttonSup{
-    background: none;
-    border: 1px solid #CEC2B2;
-    justify-content: space-between;
-    cursor: pointer;
-    right: 25%;
-    align-self: center;
-}
+    .homepage__historique__dropdown--child a:hover {
+        background-color: #e3e0de;
+    }
 
-.homepage__historique__dropdown{
-    display: flex;
-    justify-content: center;
+    .historique:hover .homepage__historique__dropdown--child {
+        display: flex;
+    }
 
-}
+    .message--user {
+        border: 1px solid #e3e0de;
+        border-radius: 20px;
+        margin: 5px 10px;
+        padding: 5px 10px;
+        background-color: #cec2b2;
+        text-align: end;
+    }
 
-.homepage__historique__dropdown--button{
-    border: none;
-    background: none;
-    cursor: pointer;
-}
-
-
-.homepage__historique__dropdown--child {
-    display: flex;
-    background: white;
-    width: 70%;
-    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
-    z-index: 1;
-    border-radius: 8px;
-    margin-top: 10px;
-    justify-content: space-between;
-}
-
-
-.homepage__historique__dropdown--child a {
-    color: black;
-    padding: 10px;
-    text-decoration: none;
-    display: inline-block;
-
-}
-
-.homepage__historique__dropdown--child a:hover {
-    background-color: #E3E0DE;
-}
-
-.historique:hover .homepage__historique__dropdown--child {
-    display: flex;
-}
-
-.message--user {
-    border: 1px solid #E3E0DE;
-    border-radius: 20px;
-    margin: 5px 10px;
-    padding: 5px 10px;
-    background-color: #CEC2B2;
-    text-align: end;
-}
-
-.message--assistant {
-    border: 1px solid #CEC2B2;
-    border-radius: 20px;
-    margin: 5px 10px;
-    padding: 5px 10px;
-    background-color: #E3E0DE;
-    text-align: start;
-}
+    .message--assistant {
+        border: 1px solid #cec2b2;
+        border-radius: 20px;
+        margin: 5px 10px;
+        padding: 5px 10px;
+        background-color: #e3e0de;
+        text-align: start;
+    }
 </style>
