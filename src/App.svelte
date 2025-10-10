@@ -1,219 +1,124 @@
 
 
 <script>
-import {onMount} from 'svelte';
-import Markdown from 'svelte-exmarkdown';
+  import { onMount } from 'svelte';
+  import Markdown from 'svelte-exmarkdown';
 
-let token = $state ("");
-//let mistralToken = $state(localStorage.getItem("mistraltoken"))
-let title = $state("");
-let conversations = $state([]);
-let newConversations = $state ({
-    title : "",
-    id: ""
-});
-let currentConversationId = $state(null);
+  let title = "";
+  let conversations = [];
+  let currentConversationId = null;
+  let messageContent = "";
+  let messages = [];
 
-let messageContent = $state ("");
-
-let messages = $state ([]);
-
-async function addConversation (event) {
+  function addConversation(event) {
     event.preventDefault();
+    if (title.trim() === "") return alert("Veuillez entrer un titre valide.");
 
-    if(conversations) {
-    try {
-        const newConversations = {
-            title : title,
-        };
+    const newConv = {
+      id: Date.now().toString(),
+      title: title.trim()
+    };
 
-        const created = await pb.collection('conversations').create(newConversations);
-        conversations.push({
-                id: created.id,
-                title: created.title
-            });
-        
-        currentConversationId = created.id;
+    conversations.push(newConv);
+    currentConversationId = newConv.id;
+    messages = [];
+    title = "";
+  }
 
-        await loadMessagesForConversation(created.id);
-        title = "";
+  function selectConversation(conversation) {
+    currentConversationId = conversation.id;
+    messages = []; // Pas de stockage pour l'instant
+  }
 
-        
-        
-    } catch (error) {
-        console.error('send message error:', error);
-    }
-}
-
-
-    else {
-      alert('Veuillez entrer un titre valide.');
-    }    
-}
-
-function selectConversation(conversation) {
-  currentConversationId = conversation.id;
-  loadMessagesForConversation(conversation.id);
-}
-
-async function removeConversation(id) {
-  try {
-    // Supprime d'abord les messages liés à cette conversation
-    const relatedMessages = await pb.collection('messages').getFullList({
-      filter: `conversations = "${id}"`
-    });
-
-    for (const msg of relatedMessages) {
-      await pb.collection('messages').delete(msg.id);
-    }
-
-    // Ensuite supprime la conversation elle-même
-    await pb.collection('conversations').delete(id);
-
-    // Mets à jour localement les conversations
+  function removeConversation(id) {
     conversations = conversations.filter(c => c.id !== id);
-
-    // Si c'était la conversation active, on la désélectionne
     if (currentConversationId === id) {
       currentConversationId = null;
       messages = [];
     }
-
-    console.log("Conversation supprimée :", id);
-  } catch (error) {
-    console.error("Erreur suppression conversation :", error);
   }
-}
 
-function handleConversationClick(event, conversationId) {
-  event.preventDefault();
-  selectConversation(conversationId);
-}
-
-
-async function loadMessagesForConversation(conversationId) {
-    try {
-        const result = await pb.collection('messages').getFullList({
-            filter: `conversations = "${conversationId}"`,
-            sort: 'created'
-        });
-        
-        messages = result.map(record => ({
-            role: record.role,
-            content: record.content,
-            created: new Date(record.created),
-        }));
-
-        
-    console.log('Messages de la conversation :', messages);
-  } catch (error) {
-    console.error("Erreur chargement messages:", error);
-  }
-}
-
-async function handleMessageSubmit (event) {
+  function handleConversationClick(event, conversation) {
     event.preventDefault();
-    console.log(messageContent);
+    selectConversation(conversation);
+  }
+
+  async function handleMessageSubmit(event) {
+    event.preventDefault();
 
     messageContent = messageContent.trim();
+    if (!messageContent) {
+      alert("Veuillez entrer un message valide.");
+      return;
+    }
 
-    if(messageContent) {
-        try {
-            const newMessage = {
-                role: "user",
-                content: messageContent,
-                created: new Date(),
-                conversations: currentConversationId
-            };
+    const userMessage = {
+      role: "user",
+      content: messageContent,
+      created: new Date()
+    };
 
-        messages.push(newMessage);
-        
-        const createdMsg = await pb.collection('messages').create(newMessage);
-        console.log("Message créé :", createdMsg);
-        messageContent = "";
+    messages.push(userMessage);
+    messageContent = "";
 
-        const formattedMessages = messages.map((msg) => ({
-        role: msg.role,
-        content: msg.content,
-      }));
+    const formattedMessages = messages.map((msg) => ({
+      role: msg.role,
+      content: msg.content
+    }));
 
-        const response = await fetch ("http://localhost:11434/api/chat",  {
-            method: "POST",
-            headers: {
-                "Content-Type" : "application/json",
+    try {
+      const response = await fetch("/api/generate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          model: "mistral",
+          messages: formattedMessages,
+          stream: true
+        })
+      });
 
-                    },
-            body: JSON.stringify(
-                {
-                    model: "Mistral:latest",
-                    messages: formattedMessages,
-                    stream: true,
-                }
-            ),
-            }
-        );
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let result = "";
 
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-    let result = "";
+      // Message IA affiché progressivement
+      const assistantMessage = {
+        role: "assistant",
+        content: "",
+        created: new Date()
+      };
+      messages.push(assistantMessage);
 
-    while (true) {
+      while (true) {
         const { done, value } = await reader.read();
         if (done) break;
+
         const chunk = decoder.decode(value);
         const lines = chunk.split("\n").filter(line => line.trim() !== "");
-    for (const line of lines) {
-        const data = JSON.parse(line);
-        result += data.message.content; // Ajoute chaque morceau de réponse
-        console.log(data.message.content); // Affiche en temps réel
+
+        for (const line of lines) {
+          const data = JSON.parse(line);
+          const token = data.message?.content || "";
+          result += token;
+          assistantMessage.content += token;
+        }
+      }
+
+      assistantMessage.created = new Date();
+
+    } catch (error) {
+      console.error("Erreur appel Ollama :", error);
     }
-        }
-
-        } catch (error) {
-            console.error('send message error:', error);
-        }
-        } else {
-            alert('Veuillez entrer un message valide.');
-        }
-    }
-
-onMount(async () => {
-  try {            
-      const conversationsResult = await pb.collection('conversations').getFullList();
-      conversations = conversationsResult;
-
-        
-        if (currentConversationId) {
-            await loadMessagesForConversation(currentConversationId);
-                }
-
-        conversations = conversationsResult.map(record => ({
-            id: record.id,
-            title: record.title,
-        }));
-        
-        console.log('Conversations chargées depuis PocketBase :', conversations);
-
-        const result = await pb.collection('messages').getFullList({
-          sort: 'created', 
-        });
-    
-        messages = result.map(record => ({
-          role: record.role,
-          content: record.content,
-          created: new Date(record.created)
-        }));
-    
-        console.log('Messages chargés depuis PocketBase :', messages);
-        
-    } catch (err) {
-        console.error('Erreur lors du chargement des messages :', err);
   }
-  
-});
-// console.log("Conversations :", {conversations});
 
+  // Si tu veux restaurer une logique de chargement plus tard
+  onMount(() => {
+    // Tu peux recharger les conversations ici si tu veux les stocker plus tard
+  });
 </script>
+
 
 <div class="homepage__container">
     <header class="homepage__container__header">
@@ -327,11 +232,13 @@ onMount(async () => {
         display: flex;
         justify-content: center;
         margin: 10px 0;
-        border-radius: 8px;
+        border-radius: 20px;
+        gap: 5px;
     }
 
     .add__conversation--input {
         height: 1.2rem;
+        padding: 5px;
         border-radius: 10px;
         border: 0.5px solid grey;
     }
@@ -394,7 +301,6 @@ onMount(async () => {
         width: 100%;
         height: 2.5rem;
         border: 1px solid black;
-        /* background-color: aqua; */
         border-radius: 35px;
         box-sizing: border-box;
         box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
@@ -429,7 +335,7 @@ onMount(async () => {
         border: 1px solid #cec2b2;
         outline: none;
         cursor: pointer;
-        border-radius: 8px;
+        border-radius: 25px;
     }
 
     .buttonSup {
